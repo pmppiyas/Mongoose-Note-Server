@@ -2,17 +2,22 @@ import express, { Request, Response, Router } from "express";
 import Note from "../Schema/noteSchema";
 const noteRouter: Router = express.Router();
 
-noteRouter.post("/create-note", async (req: Request, res: Response) => {
+noteRouter.post("/create", async (req: Request, res: Response) => {
   try {
     const myNote = new Note({
       title: req.body.title,
       content: req.body.content,
+      page: req.body.page,
+      createdAt: req.body.createdAt || new Date(),
     });
     if (!myNote.title) {
-      return res.status(400).json({ error: "Title is required" });
+      res.status(400).json({ error: "Title is required" });
+    }
+    if (!myNote.page) {
+      res.status(400).json({ error: "Page is required" });
     }
     await myNote.save().then((note) => {
-      return res.status(201).json({
+      res.status(201).json({
         success: true,
         message: "Note created successfully",
         note: note,
@@ -20,7 +25,22 @@ noteRouter.post("/create-note", async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Failed to create note" });
+    res.status(500).json({ error: "Failed to create note" });
+  }
+});
+
+noteRouter.get("/gets", async (req: Request, res: Response) => {
+  try {
+    const notes = await Note.find();
+
+    if (notes.length === 0) {
+      res.status(404).json({ message: "No notes found" });
+    }
+
+    res.status(200).json({ success: true, notes });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch notes" });
   }
 });
 

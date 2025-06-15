@@ -1,5 +1,4 @@
 import express, { Application, Request, Response } from "express";
-import mongoose, { Schema } from "mongoose";
 import noteRouter from "../Router/NoteRouter";
 
 const app: Application = express();
