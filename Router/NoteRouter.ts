@@ -2,6 +2,7 @@ import express, { Request, Response, Router } from "express";
 import Note from "../Schema/noteSchema";
 const noteRouter: Router = express.Router();
 
+//Create a Note
 noteRouter.post("/create", async (req: Request, res: Response) => {
   try {
     const myNote = new Note({
@@ -29,6 +30,7 @@ noteRouter.post("/create", async (req: Request, res: Response) => {
   }
 });
 
+// Get all Notes
 noteRouter.get("/gets", async (req: Request, res: Response) => {
   try {
     const notes = await Note.find();
@@ -44,4 +46,17 @@ noteRouter.get("/gets", async (req: Request, res: Response) => {
   }
 });
 
+// Get a Note by ID
+noteRouter.get("/get/:id", async (req: Request, res: Response) => {
+  try {
+    const note = await Note.findById(req.params.id);
+    if (!note) {
+      res.status(404).json({ message: "Note not found" });
+    }
+    res.status(200).json({ success: true, note });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch note" });
+  }
+});
 export default noteRouter;
