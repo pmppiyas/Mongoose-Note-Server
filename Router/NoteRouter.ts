@@ -5,24 +5,12 @@ const noteRouter: Router = express.Router();
 //Create a Note
 noteRouter.post("/create", async (req: Request, res: Response) => {
   try {
-    const myNote = new Note({
-      title: req.body.title,
-      content: req.body.content,
-      page: req.body.page,
-      createdAt: req.body.createdAt || new Date(),
-    });
-    if (!myNote.title) {
-      res.status(400).json({ error: "Title is required" });
-    }
-    if (!myNote.page) {
-      res.status(400).json({ error: "Page is required" });
-    }
-    await myNote.save().then((note) => {
-      res.status(201).json({
-        success: true,
-        message: "Note created successfully",
-        note: note,
-      });
+    const body = req.body;
+    const note = await Note.create(body);
+    res.status(201).json({
+      success: true,
+      message: "Note created successfully",
+      note: note,
     });
   } catch (err) {
     console.error(err);
@@ -57,6 +45,46 @@ noteRouter.get("/get/:id", async (req: Request, res: Response) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch note" });
+  }
+});
+
+// Update a Note
+noteRouter.patch("/update/:id", async (req: Request, res: Response) => {
+  try {
+    const noteId = req.params.id;
+    const updateBody = req.body;
+    const updatedNote = await Note.findByIdAndUpdate(noteId, updateBody, {
+      new: true,
+    });
+    if (!updatedNote) {
+      res.status(404).json({ message: "Updated data was not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Note updated successfully",
+      note: updatedNote,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update note" });
+  }
+});
+
+// Delete a Note
+noteRouter.delete("/delete/:id", async (req: Request, res: Response) => {
+  try {
+    const noteId = req.params.id;
+    const deletedNote = await Note.findByIdAndDelete(noteId);
+    if (!deletedNote) {
+      res.status(404).json({ message: "Note not found" });
+    }
+    res.status(200).json({
+      success: true,
+      message: "Note deleted successfully",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete note" });
   }
 });
 export default noteRouter;
