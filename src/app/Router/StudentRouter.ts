@@ -14,8 +14,8 @@ studentRouter.post("/create", async (req: Request, res: Response) => {
       student: student,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create student" });
+    // console.error(err);
+    res.status(500).json({ err });
   }
 });
 

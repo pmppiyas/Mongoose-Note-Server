@@ -1,6 +1,6 @@
 interface NoteInterface {
   title: string;
-  content?: string;
+  content: string;
   page: number;
 }
 

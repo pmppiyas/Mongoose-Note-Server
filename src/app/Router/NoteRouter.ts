@@ -14,7 +14,7 @@ noteRouter.post("/create", async (req: Request, res: Response) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to create note" });
+    res.status(500).json({ err });
   }
 });
 
