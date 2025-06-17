@@ -1,11 +1,12 @@
 import express, { Request, Response, Router } from "express";
-import { Student } from "../Schema/studentSchema";
+import { Student, studentZod } from "../Schema/studentSchema";
+
 const studentRouter: Router = express.Router();
 
 // Create a Student
 studentRouter.post("/create", async (req: Request, res: Response) => {
   try {
-    const body = req.body;
+    const body = await studentZod.parseAsync(req.body);
     console.log("Received body:", body);
     const student = await Student.create(body);
     res.status(201).json({
@@ -14,8 +15,10 @@ studentRouter.post("/create", async (req: Request, res: Response) => {
       student: student,
     });
   } catch (err) {
-    // console.error(err);
-    res.status(500).json({ err });
+    console.error(err);
+    res.status(500).json({
+      error: "Failed to admitted student",
+    });
   }
 });
 
