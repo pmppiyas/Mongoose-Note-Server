@@ -7,6 +7,7 @@ const studentRouter: Router = express.Router();
 studentRouter.post("/create", async (req: Request, res: Response) => {
   try {
     const body = await studentZod.parseAsync(req.body);
+    // const body = await req.body;
     console.log("Received body:", body);
     const student = await Student.create(body);
     res.status(201).json({
@@ -19,6 +20,8 @@ studentRouter.post("/create", async (req: Request, res: Response) => {
     res.status(500).json({
       error: "Failed to admitted student",
     });
+    console.error(err);
+    res.status(500).json({ err });
   }
 });
 

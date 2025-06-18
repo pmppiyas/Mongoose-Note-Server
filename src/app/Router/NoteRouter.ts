@@ -1,11 +1,11 @@
 import express, { Request, Response, Router } from "express";
-import Note from "../Schema/noteSchema";
+import Note, { noteZod } from "../Schema/noteSchema";
 const noteRouter: Router = express.Router();
 
 //Create a Note
 noteRouter.post("/create", async (req: Request, res: Response) => {
   try {
-    const body = req.body;
+    const body = await noteZod.parseAsync(req.body);
     const note = await Note.create(body);
     res.status(201).json({
       success: true,

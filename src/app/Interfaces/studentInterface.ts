@@ -1,3 +1,9 @@
+export interface addressInterface {
+  city: string;
+  street: string;
+  zip: number;
+}
+
 interface StudentInterface {
   firstName: string;
   lastName: string;
@@ -8,6 +14,7 @@ interface StudentInterface {
   email: string;
   password: string | number;
   birthDate?: Date;
+  address: addressInterface;
 }
 
 export default StudentInterface;

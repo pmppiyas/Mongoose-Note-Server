@@ -1,26 +1,33 @@
 import mongoose, { Schema } from "mongoose";
 import NoteInterface from "../Interfaces/noteInterface";
+import { z } from "zod";
 
+export const noteZod = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(5, "Title must be minimum 5 characters.")
+    .max(35, "Title must be upto 35 characters."),
+  content: z
+    .string()
+    .trim()
+    .min(5, "Content must be minimum 5 characters.")
+    .max(1000, "Content name must be upto 1000 characters."),
+  page: z.number().min(1, "Page number must be upper 1"),
+});
 const noteSchema = new Schema<NoteInterface>(
   {
     title: {
       type: String,
       required: true,
-      trim: true,
-      maxlength: [100, "Title must be at most 100 characters long."],
-      minlength: [5, "Title must be at least 5 characters long."],
     },
     content: {
       type: String,
       required: true,
-      minlength: [10, "Content must be at least 10 characters long."],
-      maxlength: [1000, "Content must be at most 1000 characters long."],
     },
 
     page: {
       type: Number,
-      required: true,
-      min: [1, "Page number must be at least 1."],
     },
   },
   {

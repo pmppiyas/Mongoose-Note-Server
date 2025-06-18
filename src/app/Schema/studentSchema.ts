@@ -1,6 +1,23 @@
 import mongoose, { Schema } from "mongoose";
-import StudentInterface from "../Interfaces/studentInterface";
+import StudentInterface, { addressInterface } from "../Interfaces/studentInterface";
 import { z } from "zod";
+
+const addressZOd = z.object({
+  city: z.string().min(2, { message: "City name must be at least 2 characters." }),
+  street: z.string().min(3, { message: "Street name must be at least 3 characters." }),
+  zip: z
+    .number()
+    .int()
+    .min(1000)
+    .max(9999)
+    .or(z.string().regex(/^\d{5}$/))
+    .refine(
+      (val) =>
+        (typeof val === "number" && val >= 1000 && val <= 9999) ||
+        (typeof val === "string" && /^\d{4}$/.test(val)),
+      { message: "Zip must be a valid 4-digit number." }
+    ),
+});
 
 export const studentZod = z.object({
   firstName: z
@@ -11,20 +28,17 @@ export const studentZod = z.object({
     .string()
     .min(3, "Last name must be minimum 3 characters.")
     .max(15, "Last name must be upto 15 characters."),
-  class: z
-    .number()
-    .int()
-    .refine(
-      (val) => [-2, -1, 1, 2, 3, 4, 5].includes(val),
-      "Class must be one of the following: -2, -1, 1, 2, 3, 4, or 5."
-    ),
+  class: z.string(),
   section: z.enum(["A", "B", "C"]).default("A"),
-  rollNo: z.number().int().positive(),
+  rollNo: z.number().int(),
   phone: z.number().int(),
   email: z
     .string()
-    .email("Invalid email format.")
-    .refine((val) => val.length > 0, "Email is required."),
+    .email({ message: "Invalid email format." })
+    .regex(/^[a-zA-Z0-9._%+-]+@gmail\.com$/, {
+      message: "Only Gmail addresses are allowed.",
+    })
+    .refine((val) => val.length > 0, { message: "Email is required." }),
   password: z
     .string()
     .min(6, "Password must be at least 6 characters long.")
@@ -33,12 +47,30 @@ export const studentZod = z.object({
         "Password must contain at least one uppercase letter, one lowercase letter, and one number.",
     }),
   birthDate: z
-    .date()
-    .optional()
-    .refine((date) => !date || date <= new Date(), {
-      message: "Birth date cannot be in the future.",
-    }),
+    .string()
+    .transform((val) => new Date(val))
+    .refine(
+      (date) =>
+        date instanceof Date && !isNaN(date.getTime()) && date <= new Date(),
+      {
+        message: "Birth date must be a valid date and cannot be in the future.",
+      }
+    )
+    .optional(),
+
+  address: addressZOd,
 });
+
+
+
+const addressSchema = new Schema<addressInterface>({
+  city: String,
+  street: String,
+  zip: Number,
+
+}, {
+  _id: false
+})
 
 const studentSchema = new Schema<StudentInterface>(
   {
@@ -46,29 +78,22 @@ const studentSchema = new Schema<StudentInterface>(
       type: String,
       required: true,
       trim: true,
-      // minlength: [2, "First name must be minimum 2 charecters."],
-      // maxlength: [15, "First name must be upto 15 characters."],
     },
     lastName: {
       type: String,
       required: true,
       trim: true,
-      // minlength: [2, "Last name must be minimum 2 characters."],
-      // maxlength: [15, "Last name must be upto 15 characters."],
     },
     class: {
       type: Number,
       required: true,
-      enum: [-2, -1, 1, 2, 3, 4, 5],
-      // enum: {
-      //   values: [-2, -1, 1, 2, 3, 4, 5],
-      //   message:
-      //     "Class must be one of the following: -2, -1, 1, 2, 3, 4, or 5.",
-      // },
+      enum: {
+        values: [-2, -1, 1, 2, 3, 4, 5],
+        message: "Input only: -2, -1, 1, 2, 3, 4, or 5.",
+      },
     },
     section: {
       type: String,
-      enum: ["A", "B", "C"],
       default: "A",
     },
     rollNo: {
@@ -80,7 +105,7 @@ const studentSchema = new Schema<StudentInterface>(
     email: {
       type: String,
       required: true,
-      unique: [true, "This email is already registered."],
+      unique: true,
       trim: true,
       lowercase: true,
       // validate: {
@@ -107,7 +132,6 @@ const studentSchema = new Schema<StudentInterface>(
     },
     birthDate: {
       type: Date,
-      default: null,
       // validate: {
       //   validator: function (v: Date) {
       //     return v ? v <= new Date() : true;
@@ -117,7 +141,12 @@ const studentSchema = new Schema<StudentInterface>(
       //   },
       // },
     },
+    address: {
+      type: addressSchema,
+    },
+
   },
+
   {
     versionKey: false,
     timestamps: true,
